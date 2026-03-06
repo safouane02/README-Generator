@@ -14,7 +14,7 @@ app = Flask(__name__)
 
 # Configure Gemini with the API key from environment
 genai.configure(api_key=os.environ.get("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-2.5-flash")
 
 
 def build_prompt(data: dict) -> str:
