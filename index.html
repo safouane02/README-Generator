@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>README Generator ⚡</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #080c10;
+      --surface: #0d1117;
+      --border:  #21262d;
+      --border2: #30363d;
+      --text:    #e6edf3;
+      --muted:   #8b949e;
+      --accent:  #39d353;
+      --blue:    #58a6ff;
+      --danger:  #f85149;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace; }
+
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(var(--border) 1px, transparent 1px),
+        linear-gradient(90deg, var(--border) 1px, transparent 1px);
+      background-size: 40px 40px;
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative; z-index: 1;
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    /* ── Header ── */
+    header { text-align: center; margin-bottom: 44px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 99px;
+      padding: 5px 16px;
+      font-size: 11px;
+      color: var(--accent);
+      margin-bottom: 22px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--accent);
+      animation: blink 1.8s ease infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    h1 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(30px, 6vw, 50px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      line-height: 1.1;
+    }
+
+    h1 em { font-style: normal; color: var(--accent); }
+
+    .subtitle {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .free-tag {
+      display: inline-block;
+      margin-top: 14px;
+      background: rgba(57,211,83,0.1);
+      border: 1px solid rgba(57,211,83,0.3);
+      color: var(--accent);
+      font-size: 11px;
+      padding: 4px 12px;
+      border-radius: 99px;
+      letter-spacing: 1px;
+    }
+
+    /* ── Progress dots ── */
+    .dots { display: flex; gap: 6px; justify-content: center; margin-bottom: 32px; }
+
+    .dot-step {
+      height: 4px; width: 32px; border-radius: 2px;
+      background: var(--border2);
+      transition: background 0.35s, width 0.35s;
+    }
+
+    .dot-step.active { background: var(--blue); width: 48px; }
+    .dot-step.done   { background: var(--accent); }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03), 0 24px 60px rgba(0,0,0,0.6);
+    }
+
+    .card-bar {
+      background: #161b22;
+      border-bottom: 1px solid var(--border);
+      padding: 11px 18px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .mac { width: 12px; height: 12px; border-radius: 50%; }
+    .mac.r { background: #ff5f57; }
+    .mac.y { background: #febc2e; }
+    .mac.g { background: #28c840; }
+
+    .bar-label { margin-left: 8px; color: var(--muted); font-size: 12px; }
+
+    .card-body { padding: 28px 28px 20px; }
+
+    /* ── Steps ── */
+    .step { display: none; }
+    .step.active { display: block; animation: up 0.28s ease; }
+
+    @keyframes up { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+    .step-num  { font-size: 11px; color: var(--accent); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+    .step-q    { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .step-hint { font-size: 12px; color: var(--muted); margin-bottom: 18px; }
+    .step-hint code { color: var(--blue); background: rgba(88,166,255,0.08); padding: 1px 5px; border-radius: 3px; }
+
+    textarea, input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      padding: 13px 15px;
+      outline: none;
+      resize: vertical;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 1.6;
+    }
+
+    textarea:focus, input:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(88,166,255,0.1);
+    }
+
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 22px;
+    }
+
+    .btn {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { background: #4ae464; transform: translateY(-1px); }
+    .btn-primary:disabled { background: var(--border2); color: var(--muted); cursor: not-allowed; transform: none; }
+
+    .btn-ghost { background: transparent; color: var(--muted); border: 1px solid var(--border2); }
+    .btn-ghost:hover { color: var(--text); border-color: var(--muted); }
+
+    .step-count { font-size: 12px; color: var(--muted); }
+
+    /* ── Loading ── */
+    #loading { display: none; padding: 52px 28px; text-align: center; }
+
+    .spinner {
+      width: 38px; height: 38px;
+      border: 3px solid var(--border2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 18px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading p      { color: var(--muted); font-size: 13px; }
+    #loading strong { color: var(--blue); }
+
+    /* ── Error ── */
+    .err-box {
+      display: none;
+      background: rgba(248,81,73,0.08);
+      border: 1px solid rgba(248,81,73,0.3);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    /* ── Result ── */
+    #result { display: none; }
+
+    .res-toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 18px;
+      background: #161b22;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .res-label  { font-size: 12px; color: var(--muted); }
+    .res-label span { color: var(--accent); }
+
+    .res-btns { display: flex; gap: 7px; }
+
+    .btn-sm {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 5px 13px;
+      border-radius: 6px;
+      border: 1px solid var(--border2);
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-sm:hover { color: var(--text); border-color: var(--muted); }
+    .btn-sm.ok    { color: var(--accent); border-color: var(--accent); }
+
+    #readme-out {
+      padding: 22px;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 500px;
+      overflow-y: auto;
+      color: #cdd9e5;
+    }
+
+    #readme-out::-webkit-scrollbar       { width: 5px; }
+    #readme-out::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+    .tip {
+      padding: 11px 18px;
+      border-top: 1px solid var(--border);
+      background: #161b22;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .tip code { color: var(--blue); background: rgba(88,166,255,0.08); padding: 1px 5px; border-radius: 3px; }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      margin-top: 36px;
+      font-size: 11px;
+      color: var(--border2);
+    }
+
+    footer a { color: var(--muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="badge"><div class="badge-dot"></div> 100% Free · No Login</div>
+    <h1>README <em>Generator</em></h1>
+    <p class="subtitle">Answer 6 questions → get a professional GitHub README instantly.<br>Powered by Google Gemini AI.</p>
+    <span class="free-tag">✓ Free forever · No API key needed</span>
+  </header>
+
+  <div class="dots" id="dots"></div>
+
+  <div class="card" id="mainCard">
+    <div class="card-bar">
+      <div class="mac r"></div><div class="mac y"></div><div class="mac g"></div>
+      <span class="bar-label" id="barLabel">readme-generator — new project</span>
+    </div>
+
+    <div class="card-body">
+      <div id="stepsWrap"></div>
+
+      <div id="loading">
+        <div class="spinner"></div>
+        <p>Generating README for <strong id="loadName"></strong>…</p>
+        <p style="margin-top:8px;font-size:11px;color:#484f58">Gemini is crafting your README like a senior dev would.</p>
+      </div>
+
+      <div class="err-box" id="errBox"></div>
+    </div>
+
+    <div id="result">
+      <div class="res-toolbar">
+        <span class="res-label">📄 <span id="resFilename">README.md</span> — ready</span>
+        <div class="res-btns">
+          <button class="btn-sm" id="copyBtn"     onclick="copyReadme()">📋 Copy</button>
+          <button class="btn-sm" id="downloadBtn" onclick="downloadReadme()">⬇ Download</button>
+          <button class="btn-sm"                  onclick="location.reload()">🔄 New</button>
+        </div>
+      </div>
+      <pre id="readme-out"></pre>
+      <div class="tip">
+        💡 Drop <code>README.md</code> in your repo root →
+        <code>git add README.md</code> →
+        <code>git commit -m "docs: add README"</code> →
+        <code>git push</code>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Built by <a href="https://github.com/safouane02" target="_blank">safouane02</a>
+    · Powered by Google Gemini · Free &amp; Open Source
+  </footer>
+</div>
+
+<script>
+  const QUESTIONS = [
+    { id:"name",        icon:"📦", q:"What is your project name?",          hint:"e.g. <code>awesome-cli-tool</code>",                              rows:1 },
+    { id:"description", icon:"📝", q:"Describe the project briefly.",        hint:"e.g. <code>A fast CLI tool to automate deployments</code>",        rows:2 },
+    { id:"tech",        icon:"⚙️", q:"What technologies does it use?",       hint:"e.g. <code>Python, FastAPI, PostgreSQL, Docker</code>",            rows:1 },
+    { id:"features",    icon:"✨", q:"List the main features.",              hint:"Comma-separated — e.g. <code>auto-deploy, rollback, multi-env</code>", rows:2 },
+    { id:"install",     icon:"🚀", q:"How do you install and run it?",       hint:"e.g. <code>pip install -r requirements.txt</code> then <code>python main.py</code>", rows:3 },
+    { id:"author",      icon:"👤", q:"Your name and GitHub username?",       hint:"e.g. <code>John Doe / johndoe</code>",                            rows:1 },
+  ];
+
+  let cur = 0;
+  const answers = {};
+
+  // Build dots
+  const dotsEl = document.getElementById("dots");
+  QUESTIONS.forEach((_, i) => {
+    const d = document.createElement("div");
+    d.className = "dot-step"; d.id = `d${i}`;
+    dotsEl.appendChild(d);
+  });
+
+  // Build step divs
+  const wrap = document.getElementById("stepsWrap");
+  QUESTIONS.forEach((q, i) => {
+    const isInput = q.rows === 1;
+    const field = isInput
+      ? `<input type="text" id="f${i}" placeholder="Type your answer…" autocomplete="off"/>`
+      : `<textarea id="f${i}" rows="${q.rows}" placeholder="Type your answer…"></textarea>`;
+
+    const div = document.createElement("div");
+    div.className = "step" + (i === 0 ? " active" : "");
+    div.id = `s${i}`;
+    div.innerHTML = `
+      <div class="step-num">Step ${i+1} of ${QUESTIONS.length}</div>
+      <div class="step-q">${q.icon} ${q.q}</div>
+      <div class="step-hint">${q.hint}</div>
+      ${field}
+      <div class="nav">
+        <button class="btn btn-ghost" onclick="prev()" ${i===0?"style='visibility:hidden'":""}>← Back</button>
+        <span class="step-count">${i+1} / ${QUESTIONS.length}</span>
+        <button class="btn btn-primary" onclick="next()">
+          ${i === QUESTIONS.length-1 ? "⚡ Generate" : "Next →"}
+        </button>
+      </div>`;
+    wrap.appendChild(div);
+
+    // Enter to advance on single-line inputs
+    setTimeout(() => {
+      const el = document.getElementById(`f${i}`);
+      if (el && el.tagName === "INPUT") {
+        el.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); next(); } });
+      }
+    }, 50);
+  });
+
+  function refreshDots() {
+    QUESTIONS.forEach((_, i) => {
+      const d = document.getElementById(`d${i}`);
+      d.className = "dot-step" + (i < cur ? " done" : i === cur ? " active" : "");
+    });
+  }
+
+  function focusCur() {
+    setTimeout(() => document.getElementById(`f${cur}`)?.focus(), 80);
+  }
+
+  refreshDots();
+  focusCur();
+
+  function next() {
+    const el = document.getElementById(`f${cur}`);
+    const val = el.value.trim();
+    if (!val) {
+      el.style.borderColor = "#f85149";
+      setTimeout(() => el.style.borderColor = "", 700);
+      return;
+    }
+    answers[QUESTIONS[cur].id] = val;
+
+    if (cur === QUESTIONS.length - 1) { generate(); return; }
+
+    document.getElementById(`s${cur}`).classList.remove("active");
+    cur++;
+    document.getElementById(`s${cur}`).classList.add("active");
+    refreshDots();
+    focusCur();
+  }
+
+  function prev() {
+    if (cur === 0) return;
+    document.getElementById(`s${cur}`).classList.remove("active");
+    cur--;
+    document.getElementById(`s${cur}`).classList.add("active");
+    refreshDots();
+    focusCur();
+  }
+
+  async function generate() {
+    document.getElementById(`s${cur}`).classList.remove("active");
+    dotsEl.style.display = "none";
+    document.getElementById("loading").style.display = "block";
+    document.getElementById("loadName").textContent = answers.name;
+    document.getElementById("errBox").style.display = "none";
+
+    try {
+      const res  = await fetch("/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(answers),
+      });
+      const data = await res.json();
+      if (!res.ok || data.error) throw new Error(data.error || "Unknown error");
+
+      // Show result
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("readme-out").textContent = data.readme;
+      document.getElementById("resFilename").textContent = `README_${answers.name}.md`;
+      document.getElementById("barLabel").textContent = `${answers.name} — README.md`;
+      document.getElementById("result").style.display = "block";
+
+      window._readme = data.readme;
+      window._name   = answers.name;
+
+    } catch (err) {
+      document.getElementById("loading").style.display = "none";
+      document.getElementById(`s${cur}`).classList.add("active");
+      dotsEl.style.display = "flex";
+      const box = document.getElementById("errBox");
+      box.textContent = "⚠ " + (err.message || "Something went wrong. Please try again.");
+      box.style.display = "block";
+    }
+  }
+
+  function copyReadme() {
+    navigator.clipboard.writeText(window._readme || "");
+    const btn = document.getElementById("copyBtn");
+    btn.textContent = "✓ Copied!";
+    btn.classList.add("ok");
+    setTimeout(() => { btn.textContent = "📋 Copy"; btn.classList.remove("ok"); }, 2000);
+  }
+
+  function downloadReadme() {
+    const blob = new Blob([window._readme], { type: "text/markdown" });
+    const a    = document.createElement("a");
+    a.href     = URL.createObjectURL(blob);
+    a.download = `README_${window._name || "project"}.md`;
+    a.click();
+  }
+</script>
+</body>
+</html>
